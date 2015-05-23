@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>QGIS2leaf webmap</title>
+	
+		<meta charset="utf-8" />
+		<link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css" />
+		<link rel="stylesheet" href="css/MarkerCluster.css" />
+		<link rel="stylesheet" href="css/MarkerCluster.Default.css" />
+		<link rel="stylesheet" type="text/css" href="css/qgis2web.css">
+		<link rel="stylesheet" href="css/label.css" />
+		<script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
+		<script src="js/leaflet-hash.js"></script>
+		<script src="js/label.js"></script>
+		<script src="js/Autolinker.min.js"></script>
+		<script src="js/leaflet.markercluster.js"></script>
+		<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+	</head>
+	<body>
+		<div id="map"></div>
+<script src="data/exp_MinesUXO.js"></script>
+<script src="data/exp_PhysicalRoadConstraints.js"></script>
+<script src="data/exp_UNHASFlightLocations.js"></script>
+		<script>
+
+		var map = L.map('map', { zoomControl:true, maxZoom:19 });
+		var hash = new L.Hash(map); //add hashes to html address to easy share locations
+		var additional_attrib = '<a href="https://github.com/tomchadwin/qgis2web" target ="_blank">qgis2web</a>';
+		var feature_group = new L.featureGroup([]);
+		var raster_group = new L.LayerGroup([]);
+		var basemap = L.tileLayer('http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', { 
+			attribution: additional_attrib + ' &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors,<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Tiles courtesy of <a href="http://hot.openstreetmap.org/" target="_blank">Humanitarian OpenStreetMap Team</a>'
+		});	
+		basemap.addTo(map);	
+		var layerOrder=new Array();
+		function restackLayers() {
+			for (index = 0; index < layerOrder.length; index++) {
+				feature_group.removeLayer(layerOrder[index]);
+				feature_group.addLayer(layerOrder[index]);
+			}
+		}
+
+		layerControl = L.control.layers({},{},{collapsed:false});
+function pop_MinesUXO(feature, layer) {					
+	var popupContent = '<table><tr><th scope="row">name</th><td>' + Autolinker.link(String(feature.properties['name'])) + '</td></tr><tr><th scope="row">haz_id</th><td>' + Autolinker.link(String(feature.properties['haz_id'])) + '</td></tr><tr><th scope="row">hazrdname</th><td>' + Autolinker.link(String(feature.properties['hazrdname'])) + '</td></tr><tr><th scope="row">State</th><td>' + Autolinker.link(String(feature.properties['State'])) + '</td></tr><tr><th scope="row">County</th><td>' + Autolinker.link(String(feature.properties['County'])) + '</td></tr><tr><th scope="row">Payam</th><td>' + Autolinker.link(String(feature.properties['Payam'])) + '</td></tr><tr><th scope="row">Boma</th><td>' + Autolinker.link(String(feature.properties['Boma'])) + '</td></tr><tr><th scope="row">Status</th><td>' + Autolinker.link(String(feature.properties['Status'])) + '</td></tr><tr><th scope="row">StatusReason</th><td>' + Autolinker.link(String(feature.properties['StatusReason'])) + '</td></tr><tr><th scope="row">Status Date</th><td>' + Autolinker.link(String(feature.properties['Status Date'])) + '</td></tr><tr><th scope="row">Confirmed Clear</th><td>' + Autolinker.link(String(feature.properties['Confirmed Clear'])) + '</td></tr><tr><th scope="row">Confirmed Cleared By</th><td>' + Autolinker.link(String(feature.properties['Confirmed Cleared By'])) + '</td></tr><tr><th scope="row">areasize</th><td>' + Autolinker.link(String(feature.properties['areasize'])) + '</td></tr><tr><th scope="row">hazType</th><td>' + Autolinker.link(String(feature.properties['hazType'])) + '</td></tr><tr><th scope="row">areaType</th><td>' + Autolinker.link(String(feature.properties['areaType'])) + '</td></tr><tr><th scope="row">DAType</th><td>' + Autolinker.link(String(feature.properties['DAType'])) + '</td></tr><tr><th scope="row">Survey Org</th><td>' + Autolinker.link(String(feature.properties['Survey Org'])) + '</td></tr><tr><th scope="row">Point Type</th><td>' + Autolinker.link(String(feature.properties['Point Type'])) + '</td></tr><tr><th scope="row">Longitude</th><td>' + Autolinker.link(String(feature.properties['Longitude'])) + '</td></tr><tr><th scope="row">Latitude</th><td>' + Autolinker.link(String(feature.properties['Latitude'])) + '</td></tr><tr><th scope="row">Location Longitude</th><td>' + Autolinker.link(String(feature.properties['Location Longitude'])) + '</td></tr><tr><th scope="row">Location Latitude</th><td>' + Autolinker.link(String(feature.properties['Location Latitude'])) + '</td></tr></table>';
+	layer.bindPopup(popupContent);
+}
+
+	function doStyleMinesUXO(feature) {
+		switch (feature.properties.Status) {
+			case 'Active':
+				return {
+					radius: '2.0',
+					fillColor: '#e31a1c',
+					color: '#e31a1c',
+					weight: 1,
+					fillOpacity: '1.0',
+				};
+				break;
+			case 'Expired':
+				return {
+					radius: '6.0',
+					fillColor: '#3acb20',
+					color: '#000000',
+					weight: 1,
+					fillOpacity: '1.0',
+				};
+				break;
+			case 'Non Confirmed':
+				return {
+					radius: '2.0',
+					fillColor: '#ff7f00',
+					color: '#ff7f00',
+					weight: 1,
+					fillOpacity: '1.0',
+				};
+				break;
+			default:
+				return {
+					radius: '4.0',
+					fillColor: '#bf79cb',
+					color: '#000000',
+					weight: 1,
+					fillOpacity: '1.0',
+				};
+				break;
+		}
+	}
+	var exp_MinesUXOJSON = new L.geoJson(exp_MinesUXO,{
+		onEachFeature: pop_MinesUXO,
+		pointToLayer: function (feature, latlng) {  
+			return L.circleMarker(latlng, doStyleMinesUXO(feature))
+		}
+	});
+		layerOrder[layerOrder.length] = exp_MinesUXOJSON;
+//add comment sign to hide this layer on the map in the initial view.
+feature_group.addLayer(exp_MinesUXOJSON);
+function pop_PhysicalRoadConstraints(feature, layer) {					
+	var popupContent = '<table><tr><th scope="row">OBJECTID_1</th><td>' + Autolinker.link(String(feature.properties['OBJECTID_1'])) + '</td></tr><tr><th scope="row">OBJECTID</th><td>' + Autolinker.link(String(feature.properties['OBJECTID'])) + '</td></tr><tr><th scope="row">RT_NAME</th><td>' + Autolinker.link(String(feature.properties['RT_NAME'])) + '</td></tr><tr><th scope="row">CLASS</th><td>' + Autolinker.link(String(feature.properties['CLASS'])) + '</td></tr><tr><th scope="row">SOURCE</th><td>' + Autolinker.link(String(feature.properties['SOURCE'])) + '</td></tr><tr><th scope="row">RT_STATE</th><td>' + Autolinker.link(String(feature.properties['RT_STATE'])) + '</td></tr><tr><th scope="row">SHAPE_Leng</th><td>' + Autolinker.link(String(feature.properties['SHAPE_Leng'])) + '</td></tr><tr><th scope="row">Status</th><td>' + Autolinker.link(String(feature.properties['Status'])) + '</td></tr></table>';
+	layer.bindPopup(popupContent);
+}
+
+	function doStylePhysicalRoadConstraints(feature) {
+		switch (feature.properties.Status) {
+			case 'Closed':
+				return {
+					color: '#e31a1c',
+					weight: '10.0',
+					dashArray: '',
+					opacity: '1.0',
+				};
+				break;
+			case 'Warning':
+				return {
+					color: '#ff7f00',
+					weight: '10.0',
+					dashArray: '',
+					opacity: '1.0',
+				};
+				break;
+			default:
+				return {
+					color: '#33a02c',
+					weight: '10.0',
+					dashArray: '',
+					opacity: '1.0',
+				};
+				break;
+		}
+	}
+		var exp_PhysicalRoadConstraintsJSON = new L.geoJson(exp_PhysicalRoadConstraints,{
+			onEachFeature: pop_PhysicalRoadConstraints,
+			style: doStylePhysicalRoadConstraints
+		});
+		layerOrder[layerOrder.length] = exp_PhysicalRoadConstraintsJSON;
+//add comment sign to hide this layer on the map in the initial view.
+feature_group.addLayer(exp_PhysicalRoadConstraintsJSON);
+function pop_UNHASFlightLocations(feature, layer) {					
+	var popupContent = '<table><tr><th scope="row">OBJECTID</th><td>' + Autolinker.link(String(feature.properties['OBJECTID'])) + '</td></tr><tr><th scope="row">LOCATION</th><td>' + Autolinker.link(String(feature.properties['LOCATION'])) + '</td></tr><tr><th scope="row">HUB</th><td>' + Autolinker.link(String(feature.properties['HUB'])) + '</td></tr><tr><th scope="row">Code</th><td>' + Autolinker.link(String(feature.properties['Code'])) + '</td></tr><tr><th scope="row">X</th><td>' + Autolinker.link(String(feature.properties['X'])) + '</td></tr><tr><th scope="row">Y</th><td>' + Autolinker.link(String(feature.properties['Y'])) + '</td></tr><tr><th scope="row">State</th><td>' + Autolinker.link(String(feature.properties['State'])) + '</td></tr></table>';
+	layer.bindPopup(popupContent);
+}
+
+	var exp_UNHASFlightLocationsJSON = new L.geoJson(exp_UNHASFlightLocations,{
+		onEachFeature: pop_UNHASFlightLocations,
+		pointToLayer: function (feature, latlng) {  
+			return L.circleMarker(latlng, {
+				radius: 8.0,
+				fillColor: '#1f78b4',
+				color: '#1f78b4',
+				weight: 1,
+				opacity: 1.0,
+				fillOpacity: 1.0
+			})
+		}
+	});
+	layerOrder[layerOrder.length] = exp_UNHASFlightLocationsJSON;
+//add comment sign to hide this layer on the map in the initial view.
+feature_group.addLayer(exp_UNHASFlightLocationsJSON);
+		raster_group.addTo(map);
+		feature_group.addTo(map);
+	var baseMaps = {
+		'OSM HOT': basemap
+	};
+		L.control.layers(baseMaps,{"MinesUXO": exp_MinesUXOJSON,"PhysicalRoadConstraints": exp_PhysicalRoadConstraintsJSON,"UNHASFlightLocations": exp_UNHASFlightLocationsJSON},{collapsed:false}).addTo(map);
+		map.fitBounds(feature_group.getBounds());
+	</script>
+</body>
+</html>
